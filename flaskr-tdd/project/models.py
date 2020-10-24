@@ -1,4 +1,4 @@
-from project.app import db
+from app import db
 
 
 class Post(db.Model):
@@ -11,4 +11,4 @@ class Post(db.Model):
         self.text = text
 
     def __repr__(self):
-        return f'<title {self.title}>'
+        return f"<title {self.title}>"
