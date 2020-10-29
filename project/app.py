@@ -35,9 +35,17 @@ app.config.from_object(__name__)
 # init sqlalchemy
 db = SQLAlchemy(app)
 
-# from project import models
-import models
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    text = db.Column(db.String, nullable=False)
 
+    def __init__(self, title, text):
+        self.title = title
+        self.text = text
+
+    def __repr__(self):
+        return f"<title {self.title}>"
 
 def login_required(f):
     @wraps(f)
@@ -53,7 +61,7 @@ def login_required(f):
 @app.route("/")
 def index():
     """Searches the database for entries, then displays them."""
-    entries = db.session.query(models.Post)
+    entries = db.session.query(Post)
     return render_template("index.html", entries=entries)
 
 
@@ -62,7 +70,7 @@ def add_entry():
     """Adds new post to the database."""
     if not session.get("logged_in"):
         abort(401)
-    new_entry = models.Post(request.form["title"], request.form["text"])
+    new_entry = Post(request.form["title"], request.form["text"])
     db.session.add(new_entry)
     db.session.commit()
     flash("New entry was successfully posted")
@@ -100,7 +108,7 @@ def delete_entry(post_id):
     result = {"status": 0, "message": "Error"}
     try:
         new_id = post_id
-        db.session.query(models.Post).filter_by(id=new_id).delete()
+        db.session.query(Post).filter_by(id=new_id).delete()
         db.session.commit()
         result = {"status": 1, "message": "Post Deleted"}
         flash("The entry was deleted.")
@@ -112,7 +120,7 @@ def delete_entry(post_id):
 @app.route("/search/", methods=["GET"])
 def search():
     query = request.args.get("query")
-    entries = db.session.query(models.Post)
+    entries = db.session.query(Post)
     if query:
         return render_template("search.html", entries=entries, query=query)
     return render_template("search.html")
